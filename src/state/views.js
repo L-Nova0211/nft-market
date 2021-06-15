@@ -1,7 +1,11 @@
 import { marketId, contractId } from '../state/near';
 
 
-const BAD_OWNER_ID = ['mikedigitalegg.testnet', 'web_dev.testnet'];
+const BAD_OWNER_ID = [
+    'mikedigitalegg.testnet',
+    'web_dev.testnet',
+    'binary-galleries-minter.testnet',
+];
 
 export const getMarketStoragePaid = (account) => async ({ update, getState }) => {
     if (!account) return

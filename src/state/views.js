@@ -6,6 +6,14 @@ const BAD_OWNER_ID = [
     'web_dev.testnet',
     'binary-galleries-minter.testnet',
 ];
+// api-helper config
+const domain = 'https://helper.nearapi.org';
+const batchPath = domain + '/v1/batch/';
+const headers = new Headers({
+	'max-age': '300'
+});
+
+const ADD_SALE = '__ADD_SALE';
 
 export const getMarketStoragePaid = (account) => async ({ update, getState }) => {
     if (!account) return

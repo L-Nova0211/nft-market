@@ -9,14 +9,6 @@ import { handleAcceptOffer, handleRegisterStorage, handleSaleUpdate } from '../s
 import { useHistory } from '../utils/history';
 import {Token} from './Token';
 
-// api-helper config
-const domain = 'https://helper.nearapi.org';
-const batchPath = domain + '/v1/batch/';
-const headers = new Headers({
-	'max-age': '300'
-});
-
-const ADD_SALE = '__ADD_SALE';
 
 const PATH_SPLIT = '?t=';
 const SUB_SPLIT = '&=';

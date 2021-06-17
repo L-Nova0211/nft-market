@@ -53,7 +53,7 @@ export const Token = ({
 		}
 	};
 
-	const { accountId } = account;
+	const { accountId } = account || {};
 
 	return <div className="token">
 		<div onClick={() => history.pushState({}, '', window.location.pathname)}>

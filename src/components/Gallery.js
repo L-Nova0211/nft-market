@@ -66,7 +66,7 @@ export const Gallery = ({ app, views, update, contractAccount, account, loading,
 	}
 
 
-	const currentSales = sales.filter(({ owner_id, sale_conditions }) => account?.accountId === owner_id && Object.keys(sale_conditions).length > 0)
+	const currentSales = sales.filter(({ owner_id, sale_conditions }) => account?.accountId === owner_id && Object.keys(sale_conditions || {}).length > 0)
 
 
 	let market = sales;

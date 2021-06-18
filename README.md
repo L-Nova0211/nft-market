@@ -119,6 +119,10 @@ Beyond having npm and node (latest versions), you should have Rust installed. I 
 
 https://rustup.rs/
 
+### Don't forget to install the wasm32 target:
+
+`rustup target add wasm32-unknown-unknown`
+
 Also recommend installing near-cli globally
 
 `npm i -g near-cli`

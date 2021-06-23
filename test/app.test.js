@@ -205,7 +205,7 @@ describe('deploy contract ' + contractName, () => {
 		expect(nft_supply_for_owner).toEqual('0');
 		// messing around with index and limit
 		const bobTokens = await bob.viewFunction(contractName, 'nft_tokens_for_owner', {
-			account_id: bobId, from_index: '1001', limit: '1000'
+			account_id: bobId, from_index: '1001', limit: 100
 		});
 		console.log('\n\n bobTokens', bobTokens, '\n\n');
 		expect(bobTokens.length).toEqual(0);
@@ -311,7 +311,7 @@ describe('deploy contract ' + contractName, () => {
 		const sales_by_owner_id = await contractAccount.viewFunction(marketId, 'get_sales_by_owner_id', {
 			account_id: aliceId,
 			from_index: '0',
-			limit: '50'
+			limit: 50
 		});
 		console.log('\n\n sales_by_owner_id', sales_by_owner_id, '\n\n');
 		expect(sales_by_owner_id.length).toEqual(1);
@@ -327,7 +327,7 @@ describe('deploy contract ' + contractName, () => {
 		const sales_by_nft_contract_id = await contractAccount.viewFunction(marketId, 'get_sales_by_nft_contract_id', {
 			nft_contract_id: contractId,
 			from_index: '0',
-			limit: '50'
+			limit: 50
 		});
 		console.log('\n\n sales_by_nft_contract_id', sales_by_nft_contract_id, '\n\n');
 		expect(sales_by_nft_contract_id.length > 0).toEqual(true);
@@ -343,7 +343,7 @@ describe('deploy contract ' + contractName, () => {
 		const sales_by_nft_token_type = await contractAccount.viewFunction(marketId, 'get_sales_by_nft_token_type', {
 			token_type: tokenTypes[0],
 			from_index: '0',
-			limit: '50'
+			limit: 50
 		});
 		console.log('\n\n sales_by_nft_token_type', sales_by_nft_token_type, '\n\n');
 		expect(sales_by_nft_token_type.length > 0).toEqual(true);
@@ -469,11 +469,11 @@ describe('deploy contract ' + contractName, () => {
 		const nft_supply_for_owner = await bob.viewFunction(contractName, 'nft_supply_for_owner', { account_id: bobId });
 		console.log('\n\n nft_supply_for_owner', nft_supply_for_owner, '\n\n');
 		expect(nft_supply_for_owner).toEqual('1');
-		const tokens = await bob.viewFunction(contractName, 'nft_tokens', { from_index: '0', limit: '1000' });
+		const tokens = await bob.viewFunction(contractName, 'nft_tokens', { from_index: '0', limit: 100 });
 		console.log('\n\n nft_tokens', tokens, '\n\n');
 		// proxy for total supply with low limits, could be several tests in, with many tokens minted
 		expect(tokens.length > 0).toEqual(true);
-		const bobTokens = await bob.viewFunction(contractName, 'nft_tokens_for_owner', { account_id: bobId, from_index: '0', limit: '1000' });
+		const bobTokens = await bob.viewFunction(contractName, 'nft_tokens_for_owner', { account_id: bobId, from_index: '0', limit: 100 });
 		console.log('\n\n nft_tokens_for_owner (bob)', bobTokens, '\n\n');
 		expect(bobTokens.length).toEqual(1);
 	});
@@ -862,14 +862,14 @@ describe('deploy contract ' + contractName, () => {
 		const tokenTypeSales = await bob.viewFunction(marketId, 'get_sales_by_nft_token_type', {
 			token_type: tokenTypes[1],
 			from_index: '0',
-			limit: '10'
+			limit: 10
 		});
 		console.log('\n\n tokenTypeSales', tokenTypeSales, '\n\n');
 		expect(tokenTypeSales.length).toEqual(1);
 		const tokenTypeSales2 = await bob.viewFunction(marketId, 'get_sales_by_nft_token_type', {
 			token_type: tokenTypes[2],
 			from_index: '0',
-			limit: new BN('10').toString()
+			limit: 10
 		});
 		console.log('\n\n tokenTypeSales', tokenTypeSales2, '\n\n');
 		expect(tokenTypeSales2.length).toEqual(1);

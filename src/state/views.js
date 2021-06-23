@@ -35,12 +35,12 @@ export const loadItems = (account) => async ({ update, getState }) => {
         tokens = await contractAccount.viewFunction(contractId, 'nft_tokens_for_owner', {
             account_id: account.accountId,
             from_index: '0',
-            limit: '50'
+            limit: 50
         });
         const sales = await contractAccount.viewFunction(marketId, 'get_sales_by_owner_id', {
             account_id: account.accountId,
             from_index: '0',
-            limit: '50'
+            limit: 50
         });
         // merge tokens with sale data if it's on sale
         for (let i = 0; i < tokens.length; i++) {
@@ -67,7 +67,7 @@ export const loadItems = (account) => async ({ update, getState }) => {
             batch: {
                 from_index: '0', // must be name of contract arg (above)
                 limit: '1000', // must be name of contract arg (above)
-                step: '50', // divides contract arg 'limit'
+                step: 50, // divides contract arg 'limit'
                 flatten: [], // how to combine results
             },
             sort: {
@@ -79,7 +79,7 @@ export const loadItems = (account) => async ({ update, getState }) => {
         sales = await contractAccount.viewFunction(marketId, 'get_sales_by_nft_contract_id', {
             nft_contract_id: contractId,
             from_index: '0',
-            limit: '50'
+            limit: 50
         });
     }
     
@@ -110,7 +110,7 @@ export const loadItems = (account) => async ({ update, getState }) => {
             batch: {
                 from_index: '0', // must be name of contract arg (above)
                 limit: nft_total_supply, // must be name of contract arg (above)
-                step: '50', // divides contract arg 'limit'
+                step: 50, // divides contract arg 'limit'
                 flatten: [], // how to combine results
             },
             sort: {
@@ -121,7 +121,7 @@ export const loadItems = (account) => async ({ update, getState }) => {
     } else {
         allTokens = await contractAccount.viewFunction(contractId, 'nft_tokens', {
             from_index: '0',
-            limit: '50'
+            limit: 50
         });
     }
 

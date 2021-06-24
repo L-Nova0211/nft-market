@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5 fix breaking change to sale_views.rs
+
+- Bug in get_sales_by_nft_contract_id
+
 ## 1.0.4 support wallet NFT pagination
 
 - Update contracts to make limit: number (vs string)

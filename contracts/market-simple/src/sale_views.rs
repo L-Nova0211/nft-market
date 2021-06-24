@@ -73,7 +73,7 @@ impl Contract {
         let start = u64::from(from_index);
         let end = min(start + limit, sales.len());
         for i in start..end {
-            tmp.push(self.sales.get(&keys.get(i).unwrap()).unwrap());
+            tmp.push(self.sales.get(&format!("{}{}{}", &nft_contract_id, DELIMETER, &keys.get(i).unwrap())).unwrap());
         }
         tmp
     }

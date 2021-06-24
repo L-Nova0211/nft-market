@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4 support wallet NFT pagination
+
+- Update contracts to make limit: number (vs string)
+- Update UI, api-helper was also released to accomodate this change
+
 ## 1.0.3 bug fix
 
 - Wallet not connected

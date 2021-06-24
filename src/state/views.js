@@ -1,11 +1,7 @@
 import { marketId, contractId } from '../state/near';
 
 
-const BAD_OWNER_ID = [
-    'mikedigitalegg.testnet',
-    'web_dev.testnet',
-    'binary-galleries-minter.testnet',
-];
+const BAD_OWNER_ID = [];
 // api-helper config
 const domain = 'https://helper.nearapi.org';
 const batchPath = domain + '/v1/batch/';

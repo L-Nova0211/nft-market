@@ -232,7 +232,7 @@ export const Gallery = ({ app, views, update, contractAccount, account, loading,
 								}
 								{
 									Object.keys(bids).length > 0 && <>
-										<h4>Offers 2</h4>
+										<h4>Offers</h4>
 										{
 											Object.entries(bids).map(([ft_token_id, { owner_id, price }]) => <div className="offers" key={ft_token_id}>
 												<div>

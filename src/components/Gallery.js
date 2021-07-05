@@ -142,15 +142,15 @@ export const Gallery = ({ app, views, update, contractAccount, account, loading,
 						Object.keys(bids).length > 0 && <>
 							<h4>Offers</h4>
 							{
-								Object.entries(bids).map(([ft_token_id, { owner_id: bid_owner_id, price }]) => <div className="offers" key={ft_token_id}>
+								Object.entries(bids).map(([ft_token_id, ft_token_bids]) => ft_token_bids.map(({ owner_id: bid_owner_id, price }) => <div className="offers" key={ft_token_id}>
 									<div>
 										{price === '0' ? 'open' : formatNearAmount(price, 4)} - {token2symbol[ft_token_id]} by {bid_owner_id}
 									</div>
 									{
 										accountId === owner_id &&
-										<button onClick={() => handleAcceptOffer(token_id, ft_token_id)}>Accept</button>
+										<button onClick={() => handleAcceptOffer(account, token_id, ft_token_id)}>Accept</button>
 									}
-								</div>)
+								</div>) )
 							}
 						</>
 					}
@@ -232,7 +232,7 @@ export const Gallery = ({ app, views, update, contractAccount, account, loading,
 								}
 								{
 									Object.keys(bids).length > 0 && <>
-										<h4>Offers</h4>
+										<h4>Offers 2</h4>
 										{
 											Object.entries(bids).map(([ft_token_id, { owner_id, price }]) => <div className="offers" key={ft_token_id}>
 												<div>

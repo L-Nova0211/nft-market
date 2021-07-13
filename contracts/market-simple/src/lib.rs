@@ -160,6 +160,10 @@ impl Contract {
         }
     }
 
+    pub fn storage_minimum_balance(&self) -> U128 {
+        U128(STORAGE_PER_SALE)
+    }
+
     pub fn storage_balance_of(&self, account_id: ValidAccountId) -> U128 {
         U128(self.storage_deposits.get(account_id.as_ref()).unwrap_or(0))
     }

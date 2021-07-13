@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.7 fix breaking change to sale_views.rs
+
+- Add storage_minimum_balance to market-simple 
+
 ## 1.0.6 fix breaking change to sale_views.rs
 
 - Bug in market-simple storage_withdraw thanks @BenKurrek

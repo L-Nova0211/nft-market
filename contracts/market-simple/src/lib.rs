@@ -42,6 +42,12 @@ pub type FungibleTokenId = AccountId;
 pub type ContractAndTokenId = String;
 // TODO: Capital U128
 pub type Payout = HashMap<AccountId, U128>;
+#[derive(Serialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct StorageBalanceBounds {
+    pub min: U128,
+    pub max: Option<U128>,
+}
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -131,9 +137,13 @@ impl Contract {
         let mut amount = self.storage_deposits.remove(&owner_id).unwrap_or(0);
         let sales = self.by_owner_id.get(&owner_id);
         let len = sales.map(|s| s.len()).unwrap_or_default();
-        amount -= u128::from(len) * STORAGE_PER_SALE;
+        let diff = u128::from(len) * STORAGE_PER_SALE;
+        amount -= diff;
         if amount > 0 {
-            Promise::new(owner_id).transfer(amount);
+            Promise::new(owner_id.clone()).transfer(amount);
+        }
+        if diff > 0 {
+            self.storage_deposits.insert(&owner_id, &diff);
         }
     }
 
@@ -143,11 +153,24 @@ impl Contract {
         self.ft_token_ids.to_vec()
     }
 
-    pub fn storage_amount(&self) -> U128 {
-        U128(STORAGE_PER_SALE)
+    pub fn storage_balance_bounds(&self) -> StorageBalanceBounds {
+        StorageBalanceBounds {
+            min: U128(STORAGE_PER_SALE),
+            max: None,
+        }
     }
+
+    pub fn storage_balance_of(&self, account_id: ValidAccountId) -> U128 {
+        U128(self.storage_deposits.get(account_id.as_ref()).unwrap_or(0))
+    }
+
+    /// deprecated
 
     pub fn storage_paid(&self, account_id: ValidAccountId) -> U128 {
         U128(self.storage_deposits.get(account_id.as_ref()).unwrap_or(0))
+    }
+
+    pub fn storage_amount(&self) -> U128 {
+        U128(STORAGE_PER_SALE)
     }
 }

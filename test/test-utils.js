@@ -36,6 +36,12 @@ async function initContract() {
 }
 const getAccountBalance = async (accountId) => (new nearAPI.Account(connection, accountId)).getAccountBalance();
 
+const initAccount = async(accountId, secret) => {
+	account = new nearAPI.Account(connection, accountId);
+	const newKeyPair = KeyPair.fromString(secret);
+	keyStore.setKey(networkId, accountId, newKeyPair);
+	return account
+}
 const createOrInitAccount = async(accountId, secret) => {
 	let account;
 	try {
@@ -131,6 +137,33 @@ const getSignature = async (account) => {
 	const blockNumberSignature = Buffer.from(signed.signature).toString('base64');
 	return { blockNumber, blockNumberSignature };
 };
+
+const loadCredentials = (accountId) => {
+	const credPath = `./neardev/${networkId}/${accountId}.json`;
+	console.log(
+		"Loading Credentials:\n",
+		credPath
+	);
+
+	let credentials;
+	try {
+		credentials = JSON.parse(
+			fs.readFileSync(
+				credPath
+			)
+		);
+	} catch(e) {
+		console.warn('credentials not in /neardev');
+		/// attempt to load backup creds from local machine
+		credentials = JSON.parse(
+			fs.readFileSync(
+				`${process.env.HOME}/.near-credentials/${networkId}/${accountId}.json`
+			)
+		);
+	}
+
+	return credentials
+}
 
 module.exports = { 
 	TEST_HOST,

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.6 fix breaking change to sale_views.rs
+
+- Bug in market-simple storage_withdraw thanks @BenKurrek
+- Add storage standard interface to market-simple 
+
 ## 1.0.5 fix breaking change to sale_views.rs
 
 - Bug in get_sales_by_nft_contract_id

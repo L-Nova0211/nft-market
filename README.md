@@ -17,6 +17,23 @@ A PoC backbone for NFT Marketplaces on NEAR Protocol.
 - [x] first pass / internal audit
 - [ ] connect with bridged tokens e.g. buy and sell with wETH/nDAI (or whatever we call these)
 
+## Known Issues / Implementation Details for Markets
+
+* approve NFT on marketplace A and B
+* it sells on B
+* still listed on A
+* user Alice goes to purchase on marketplace A but this will fail
+* the token has been transferred already and marketplace A has an incorrect approval ID for this NFT
+
+There are 3 potential solutions:
+
+1. handle in market contract - When it fails because nft_transfer fails, marketplace could make promise call that checks nft_token owner_id is still sale owner_id and remove sale. This means it will still fail for 1 user.
+2. handle with server - run a server that checks this stuff with a cron job on a regular interval. This potentially avoids failing for any user.
+3. let it fail client side then alert server to remove sale. No cron. Still fails for 1 user.
+
+Matt's opinion:
+If you're implemention a marketplace, you most likely are running a server somewhere. Option (2) is the best UX and also allows your sale listings to be the most accurate and up to date.
+
 ## Notes:
 
 High level diagram of NFT sale on Market using Fungible Token:

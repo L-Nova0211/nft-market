@@ -12,7 +12,7 @@ pub struct Bid {
 #[serde(crate = "near_sdk::serde")]
 pub struct Sale {
     pub owner_id: AccountId,
-    pub approval_id: U64,
+    pub approval_id: u64,
     pub nft_contract_id: String,
     pub token_id: String,
     pub sale_conditions: SaleConditions,

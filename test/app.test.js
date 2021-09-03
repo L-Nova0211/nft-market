@@ -154,7 +154,7 @@ describe('deploy contract ' + contractName, () => {
 		marketAccount = await createOrInitAccount(marketId, GUESTS_ACCOUNT_SECRET);
 		const marketAccountState = await marketAccount.state();
 		console.log('\n\nstate:', marketAccountState, '\n\n');
-		if (marketAccountState.code_hash === '11111111111111111111111111111111') {
+		if (true || marketAccountState.code_hash === '11111111111111111111111111111111') {
 
 			const marketContractBytes = fs.readFileSync('./out/market.wasm');
 			console.log('\n\n deploying marketAccount contractBytes:', marketContractBytes.length, '\n\n');
@@ -165,21 +165,22 @@ describe('deploy contract ' + contractName, () => {
 			};
 			const actions = [
 				deployContract(marketContractBytes),
-				functionCall('new', newMarketArgs, GAS)
+				//functionCall('new', newMarketArgs, GAS)
 			];
 			await marketAccount.signAndSendTransaction({ receiverId: marketId, actions });
 
 			/// NOTE market must register for all ft_token_ids it wishes to use (e.g. use this loop for standard fts)
-			ft_token_ids.forEach(async (ft_token_id) => {
-				const deposit = await marketAccount.viewFunction(ft_token_id, 'storage_minimum_balance');
-				await marketAccount.functionCall({
-					contractId: ft_token_id,
-					methodName: 'storage_deposit',
-					args: {},
-					gas: GAS,
-					attachedDeposit: deposit
-				});
-			});
+			
+			// ft_token_ids.forEach(async (ft_token_id) => {
+			// 	const deposit = await marketAccount.viewFunction(ft_token_id, 'storage_minimum_balance');
+			// 	await marketAccount.functionCall({
+			// 		contractId: ft_token_id,
+			// 		methodName: 'storage_deposit',
+			// 		args: {},
+			// 		gas: GAS,
+			// 		attachedDeposit: deposit
+			// 	});
+			// });
 		}
 		// get all supported tokens as array
 		const supportedTokens = await marketAccount.viewFunction(marketId, 'supported_ft_token_ids');

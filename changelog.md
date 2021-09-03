@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.8 fix u64 vs. U64 for approval ids
+
+- Makes NFT and Market contract match standard
+- Re-deployment is non-breaking to existing NFT contracts, even if approvals are already added
+- Recommeneded: Markets should remove all sales prior to migrating since since approval_id type is changed
+
+## 1.0.7 fix breaking change to sale_views.rs
+
+- Add storage_minimum_balance to market-simple 
+
 ## 1.0.7 fix breaking change to sale_views.rs
 
 - Add storage_minimum_balance to market-simple 

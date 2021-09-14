@@ -12,7 +12,7 @@ pub trait NonFungibleTokenCore {
         &mut self,
         receiver_id: ValidAccountId,
         token_id: TokenId,
-        approval_id: Option<u64>,
+        approval_id: u64,
         memo: Option<String>,
     );
 
@@ -20,7 +20,7 @@ pub trait NonFungibleTokenCore {
         &mut self,
         receiver_id: ValidAccountId,
         token_id: TokenId,
-        approval_id: Option<u64>,
+        approval_id: u64,
         memo: Option<String>,
         balance: Option<U128>,
         max_len_payout: Option<u32>,
@@ -31,7 +31,7 @@ pub trait NonFungibleTokenCore {
         &mut self,
         receiver_id: ValidAccountId,
         token_id: TokenId,
-        approval_id: Option<u64>,
+        approval_id: u64,
         memo: Option<String>,
         msg: String,
     ) -> Promise;
@@ -101,7 +101,7 @@ impl NonFungibleTokenCore for Contract {
         &mut self,
         receiver_id: ValidAccountId,
         token_id: TokenId,
-        approval_id: Option<u64>,
+        approval_id: u64,
         memo: Option<String>,
     ) {
         assert_one_yocto();
@@ -110,7 +110,7 @@ impl NonFungibleTokenCore for Contract {
             &sender_id,
             receiver_id.as_ref(),
             &token_id,
-            approval_id,
+            Some(approval_id),
             memo,
         );
         refund_approved_account_ids(
@@ -125,7 +125,7 @@ impl NonFungibleTokenCore for Contract {
         &mut self,
         receiver_id: ValidAccountId,
         token_id: TokenId,
-        approval_id: Option<u64>,
+        approval_id: u64,
         memo: Option<String>,
         balance: Option<U128>,
         max_len_payout: Option<u32>,
@@ -136,7 +136,7 @@ impl NonFungibleTokenCore for Contract {
             &sender_id,
             receiver_id.as_ref(),
             &token_id,
-            approval_id,
+            Some(approval_id),
             memo,
         );
         refund_approved_account_ids(
@@ -187,7 +187,7 @@ impl NonFungibleTokenCore for Contract {
         &mut self,
         receiver_id: ValidAccountId,
         token_id: TokenId,
-        approval_id: Option<u64>,
+        approval_id: u64,
         memo: Option<String>,
         msg: String,
     ) -> Promise {
@@ -197,7 +197,7 @@ impl NonFungibleTokenCore for Contract {
             &sender_id,
             receiver_id.as_ref(),
             &token_id,
-            approval_id,
+            Some(approval_id),
             memo,
         );
         // Initiating receiver's call and the callback

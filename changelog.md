@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.9 remove option on u64 for nft_transfer[_payout,_call]
+
+- Makes NFT match standard closely, even though calls from Market/Client unaffected e.g. they could send approval_id or not
+
 ## 1.0.8 fix u64 vs. U64 for approval ids
 
 - Makes NFT and Market contract match standard

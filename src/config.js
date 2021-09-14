@@ -1,4 +1,4 @@
-const contractName = 'dev-1631631982883-88569999874128';
+const contractName = process.env.CI ? 'dev-1630678248018-13338738116772' : 'dev-1631631982883-88569999874128';
 
 module.exports = function getConfig() {
 	let config = {

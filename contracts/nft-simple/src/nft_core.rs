@@ -1,5 +1,5 @@
 use crate::*;
-use near_sdk::json_types::{ValidAccountId, U64};
+use near_sdk::json_types::{ValidAccountId};
 use near_sdk::{ext_contract, log, Gas, PromiseResult};
 
 const GAS_FOR_NFT_APPROVE: Gas = 10_000_000_000_000;
@@ -16,15 +16,17 @@ pub trait NonFungibleTokenCore {
         memo: Option<String>,
     );
 
+  	fn nft_payout(&self, token_id: String, balance: U128, max_len_payout: u32) -> Payout;
+
     fn nft_transfer_payout(
         &mut self,
         receiver_id: ValidAccountId,
         token_id: TokenId,
         approval_id: u64,
-        memo: Option<String>,
-        balance: Option<U128>,
-        max_len_payout: Option<u32>,
-    ) -> Option<Payout>;
+        memo: String,
+        balance: U128,
+        max_len_payout: u32,
+    ) -> Payout;
 
     /// Returns `true` if the token was transferred from the sender's account.
     fn nft_transfer_call(
@@ -38,11 +40,18 @@ pub trait NonFungibleTokenCore {
 
     fn nft_approve(&mut self, token_id: TokenId, account_id: ValidAccountId, msg: Option<String>);
 
+	fn nft_is_approved(
+        &self,
+        token_id: TokenId,
+        approved_account_id: AccountId,
+        approval_id: Option<u64>,
+    ) -> bool;
+
     fn nft_revoke(&mut self, token_id: TokenId, account_id: ValidAccountId);
 
     fn nft_revoke_all(&mut self, token_id: TokenId);
 
-    fn nft_total_supply(&self) -> U64;
+    fn nft_total_supply(&self) -> U128;
 
     fn nft_token(&self, token_id: TokenId) -> Option<JsonToken>;
 }
@@ -78,8 +87,8 @@ trait NonFungibleTokenResolver {
         &mut self,
         owner_id: AccountId,
         receiver_id: AccountId,
-        approved_account_ids: HashMap<AccountId, u64>,
         token_id: TokenId,
+        approved_account_ids: HashMap<AccountId, u64>,
     ) -> bool;
 }
 
@@ -88,8 +97,8 @@ trait NonFungibleTokenResolver {
         &mut self,
         owner_id: AccountId,
         receiver_id: AccountId,
-        approved_account_ids: HashMap<AccountId, u64>,
         token_id: TokenId,
+        approved_account_ids: HashMap<AccountId, u64>,
     ) -> bool;
 }
 
@@ -119,17 +128,49 @@ impl NonFungibleTokenCore for Contract {
         );
     }
 
-    // CUSTOM - this method is included for marketplaces that respect royalties
+    fn nft_payout(&self, token_id: String, balance: U128, max_len_payout: u32) -> Payout {
+		let token = self.tokens_by_id.get(&token_id).expect("No token");
+
+        // compute payouts based on balance option
+        // adds in contract_royalty and computes previous owner royalty from remainder
+        let owner_id = token.owner_id;
+        let mut total_perpetual = 0;
+        let balance_u128 = u128::from(balance);
+		let mut payout: Payout = HashMap::new();
+		let royalty = token.royalty;
+
+		assert!(royalty.len() as u32 <= max_len_payout, "Market cannot payout to that many receivers");
+
+		for (k, v) in royalty.iter() {
+			let key = k.clone();
+			if key != owner_id {
+				payout.insert(key, royalty_to_payout(*v, balance_u128));
+				total_perpetual += *v;
+			}
+		}
+		
+		// payout to contract owner - may be previous token owner, they get remainder of balance
+		if self.contract_royalty > 0 && self.owner_id != owner_id {
+			payout.insert(self.owner_id.clone(), royalty_to_payout(self.contract_royalty, balance_u128));
+			total_perpetual += self.contract_royalty;
+		}
+		assert!(total_perpetual <= MINTER_ROYALTY_CAP + CONTRACT_ROYALTY_CAP, "Royalties should not be more than caps");
+		// payout to previous owner
+		payout.insert(owner_id, royalty_to_payout(10000 - total_perpetual, balance_u128));
+
+		payout
+	}
+
     #[payable]
     fn nft_transfer_payout(
         &mut self,
         receiver_id: ValidAccountId,
         token_id: TokenId,
         approval_id: u64,
-        memo: Option<String>,
-        balance: Option<U128>,
-        max_len_payout: Option<u32>,
-    ) -> Option<Payout> {
+        memo: String,
+        balance: U128,
+        max_len_payout: u32,
+    ) -> Payout {
         assert_one_yocto();
         let sender_id = env::predecessor_account_id();
         let previous_token = self.internal_transfer(
@@ -137,7 +178,7 @@ impl NonFungibleTokenCore for Contract {
             receiver_id.as_ref(),
             &token_id,
             Some(approval_id),
-            memo,
+            Some(memo),
         );
         refund_approved_account_ids(
             previous_token.owner_id.clone(),
@@ -148,38 +189,30 @@ impl NonFungibleTokenCore for Contract {
         // adds in contract_royalty and computes previous owner royalty from remainder
         let owner_id = previous_token.owner_id;
         let mut total_perpetual = 0;
-        let payout = if let Some(balance) = balance {
-            let balance_u128 = u128::from(balance);
-            let mut payout: Payout = HashMap::new();
-            let royalty = self.tokens_by_id.get(&token_id).expect("No token").royalty;
+        let balance_u128 = u128::from(balance);
+		let mut payout: Payout = HashMap::new();
+		let royalty = self.tokens_by_id.get(&token_id).expect("No token").royalty;
 
-            if let Some(max_len_payout) = max_len_payout {
-                assert!(royalty.len() as u32 <= max_len_payout, "Market cannot payout to that many receivers");
-            }
+		assert!(royalty.len() as u32 <= max_len_payout, "Market cannot payout to that many receivers");
 
-            for (k, v) in royalty.iter() {
-                let key = k.clone();
-                if key != owner_id {
-                    payout.insert(key, royalty_to_payout(*v, balance_u128));
-                    total_perpetual += *v;
-                }
-            }
-            
-            // payout to contract owner - may be previous token owner, they get remainder of balance
-            if self.contract_royalty > 0 && self.owner_id != owner_id {
-                payout.insert(self.owner_id.clone(), royalty_to_payout(self.contract_royalty, balance_u128));
-                total_perpetual += self.contract_royalty;
-            }
-            assert!(total_perpetual <= MINTER_ROYALTY_CAP + CONTRACT_ROYALTY_CAP, "Royalties should not be more than caps");
-            // payout to previous owner
-            payout.insert(owner_id, royalty_to_payout(10000 - total_perpetual, balance_u128));
+		for (k, v) in royalty.iter() {
+			let key = k.clone();
+			if key != owner_id {
+				payout.insert(key, royalty_to_payout(*v, balance_u128));
+				total_perpetual += *v;
+			}
+		}
+		
+		// payout to contract owner - may be previous token owner, they get remainder of balance
+		if self.contract_royalty > 0 && self.owner_id != owner_id {
+			payout.insert(self.owner_id.clone(), royalty_to_payout(self.contract_royalty, balance_u128));
+			total_perpetual += self.contract_royalty;
+		}
+		assert!(total_perpetual <= MINTER_ROYALTY_CAP + CONTRACT_ROYALTY_CAP, "Royalties should not be more than caps");
+		// payout to previous owner
+		payout.insert(owner_id, royalty_to_payout(10000 - total_perpetual, balance_u128));
 
-            Some(payout)
-        } else {
-            None
-        };
-
-        payout
+		payout
     }
 
     #[payable]
@@ -213,8 +246,8 @@ impl NonFungibleTokenCore for Contract {
         .then(ext_self::nft_resolve_transfer(
             previous_token.owner_id,
             receiver_id.into(),
-            previous_token.approved_account_ids,
             token_id,
+            previous_token.approved_account_ids,
             &env::current_account_id(),
             NO_DEPOSIT,
             GAS_FOR_RESOLVE_TRANSFER,
@@ -226,7 +259,7 @@ impl NonFungibleTokenCore for Contract {
         assert_at_least_one_yocto();
         let account_id: AccountId = account_id.into();
 
-        let mut token = self.tokens_by_id.get(&token_id).expect("Token not found");
+        let mut token = self.tokens_by_id.get(&token_id).expect("No token");
 
         assert_eq!(
             &env::predecessor_account_id(),
@@ -273,10 +306,29 @@ impl NonFungibleTokenCore for Contract {
         }
     }
 
+	fn nft_is_approved(
+        &self,
+        token_id: TokenId,
+        approved_account_id: AccountId,
+        approval_id: Option<u64>,
+    ) -> bool {
+        let token = self.tokens_by_id.get(&token_id).expect("No token");
+		let approval = token.approved_account_ids.get(&approved_account_id);
+		if let Some(approval) = approval {
+			if let Some(approval_id) = approval_id {
+				approval_id == *approval
+			} else {
+				false
+			}
+		} else {
+			false
+		}
+    }
+
     #[payable]
     fn nft_revoke(&mut self, token_id: TokenId, account_id: ValidAccountId) {
         assert_one_yocto();
-        let mut token = self.tokens_by_id.get(&token_id).expect("Token not found");
+        let mut token = self.tokens_by_id.get(&token_id).expect("No token");
         let predecessor_account_id = env::predecessor_account_id();
         assert_eq!(&predecessor_account_id, &token.owner_id);
         if token
@@ -292,7 +344,7 @@ impl NonFungibleTokenCore for Contract {
     #[payable]
     fn nft_revoke_all(&mut self, token_id: TokenId) {
         assert_one_yocto();
-        let mut token = self.tokens_by_id.get(&token_id).expect("Token not found");
+        let mut token = self.tokens_by_id.get(&token_id).expect("No token");
         let predecessor_account_id = env::predecessor_account_id();
         assert_eq!(&predecessor_account_id, &token.owner_id);
         if !token.approved_account_ids.is_empty() {
@@ -302,8 +354,8 @@ impl NonFungibleTokenCore for Contract {
         }
     }
 
-    fn nft_total_supply(&self) -> U64 {
-        self.token_metadata_by_id.len().into()
+    fn nft_total_supply(&self) -> U128 {
+        U128(self.token_metadata_by_id.len() as u128)
     }
 
     fn nft_token(&self, token_id: TokenId) -> Option<JsonToken> {
@@ -330,8 +382,8 @@ impl NonFungibleTokenResolver for Contract {
         &mut self,
         owner_id: AccountId,
         receiver_id: AccountId,
-        approved_account_ids: HashMap<AccountId, u64>,
         token_id: TokenId,
+        approved_account_ids: HashMap<AccountId, u64>,
     ) -> bool {
         // Whether receiver wants to return token back to the sender, based on `nft_on_transfer`
         // call result.

@@ -274,7 +274,8 @@ describe('deploy contract ' + contractName, () => {
 				methodName: 'nft_transfer',
 				args: {
 					receiver_id: bobId,
-					token_id
+					token_id,
+					approval_id: 0,
 				},
 				gas: GAS,
 				attachedDeposit: 1

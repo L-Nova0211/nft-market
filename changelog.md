@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.10 several small standards updates, see #8, #9, #10, #12, #13, #15, #16, #17
+
+- several optional args for nft_transfer_payout are not optional anymore
+- nft_transfer requires approval_id
+odd since if you're owner you should be able to transfer without approval_id - just pass 0 if you're owner, see tests
+- check diff for changes to tests if you rolled your own: https://github.com/near-apps/nft-market/commit/ba2b5ce07043061059a5482e815433101d4c455f
+- check diff for changes to market, max_len_payout is required parameter now, your market may vary in how many payouts it allows
+
 ## 1.0.9 remove option on u64 for nft_transfer[_payout,_call]
 
 - Makes NFT match standard closely, even though calls from Market/Client unaffected e.g. they could send approval_id or not
